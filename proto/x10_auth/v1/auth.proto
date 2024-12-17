@@ -1,0 +1,38 @@
+/*
+  Copyright (c) 2024 Indi
+
+  Description:
+    Internal interaction contract
+    
+  Owner: 
+    alexanderdolgosheev@gmail.com
+*/
+
+syntax = "proto3";
+package x10archery.x10_auth.v1;
+option csharp_namespace = "X10Archery.X10Auth.V1";
+
+import "google/protobuf/wrappers.proto";
+import 'custom_enums/v1/custom_enums.proto';
+
+service AuthenticateService {
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+}
+
+message ValidateTokenRequest {
+  google.protobuf.StringValue token = 1;
+}
+
+message ValidateTokenResponse {
+  bool is_valid = 1;
+  UserInfo user_info = 2;
+
+  google.protobuf.StringValue error = 3;
+  x10archery.custom_enums.v1.OperationStatus operation_status = 4;
+}
+
+message UserInfo {
+  string name = 1;
+  string email = 2;
+  string picture = 3;
+}
