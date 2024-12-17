@@ -1,24 +1,24 @@
 run-name: ${{ inputs.comment }} [${{ github.ref_name }} ref] ${{ inputs.application }} - ${{ inputs.environment }} by @${{ github.actor }}
-name: build and deploy
+name: CI/CD
 on:
   workflow_dispatch:
     inputs:
       application:
         description: 'Application for deploy'
         required: true
-        default: Api
+        default: x10archery-be
         type: choice
         options:
-        - Api
+          - x10archery-be
       environment:
         type: environment
         required: true
         description: 'environment to deploy, for prod use workflow from tags'
-        default: dev
+        default: development
       comment:
         description: "comment"
         required: true
-        default: "usefull comment" 
+        default: "usefull information"
         type: string
 
 defaults:
