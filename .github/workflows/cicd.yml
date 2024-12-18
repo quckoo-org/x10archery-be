@@ -181,8 +181,7 @@ jobs:
           echo ${{ secrets.KUBE_CONFIG }} | base64 -d > ~/CONFIG
           export KUBECONFIG=~/CONFIG
           echo "${{ secrets.HARBOR_ROBOT_TOKEN }}" | helm registry login ${{ vars.HARBOR_HOST }} --username '${{ vars.HARBOR_ROBOT_NAME }}' --password-stdin
-          helmfile -f .helm/helmfile.yaml -e "${{ env.ENVIRONMENT }}" --state-values-set "HARBOR_HOST=${{ vars.HARBOR_HOST }},HARBOR_PROJECT_NAME=${{ vars.HARBOR_PROJECT_NAME }},APPLICATION_NAME=${{ vars.APPLICATION_NAME }},CHART_VERSION=${{ env.CHART_VERSION }},IMAGE_TAG=${{ env.IMAGE_TAG }},K8S_NAMESPACE=${{ vars.K8S_NAMESPACE }},SECRET_NAME=${{ vars.SECRET_NAME }},GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},SEQ_URI=${{ vars.SEQ_URI }},SEQ_TOKEN=${{ secrets.SEQ_TOKEN }},POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }}" sync
-
+          helmfile -f .helm/helmfile.yaml -e "${{ env.ENVIRONMENT }}" --state-values-set "HARBOR_HOST=${{ vars.HARBOR_HOST }},HARBOR_PROJECT_NAME=${{ vars.HARBOR_PROJECT_NAME }},APPLICATION_NAME=${{ vars.APPLICATION_NAME }},CHART_VERSION=${{ env.CHART_VERSION }},IMAGE_TAG=${{ env.IMAGE_TAG }},K8S_NAMESPACE=${{ vars.K8S_NAMESPACE }},SECRET_NAME=${{ vars.SECRET_NAME }},GOOGLE_CLIENT_ID=${{ vars.GOOGLE_CLIENT_ID }},SEQ_URI=${{ vars.SEQ_URI }},SEQ_TOKEN=${{ secrets.SEQ_TOKEN }},POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }}" sync
           echo "Chart version: [${{ env.CHART_VERSION }}]" >> "$GITHUB_STEP_SUMMARY"
           echo "Image version: [${{ env.IMAGE_TAG }}]" >> "$GITHUB_STEP_SUMMARY"
 

@@ -2,18 +2,18 @@ helmDefaults:
   wait: true
   atomic: true
   timeout: 300
----
+
 repositories:
   - url: {{ .Values.HARBOR_HOST | toString }}/{{ .Values.HARBOR_PROJECT_NAME | toString }}
     name: {{ .Values.APPLICATION_NAME | toString }}
     username: 'robot$x10-archery+x10-archery'
     password: {{ requiredEnv "HARBOR_ROBOT_TOKEN" }}
     oci: true
----
+
 environments:
   development:
   production:
----
+
 releases:
   - name: "{{ .Values.APPLICATION_NAME }}"
     namespace: "{{ .Values.K8S_NAMESPACE }}"
@@ -26,4 +26,4 @@ releases:
           tag: "{{ .Values.IMAGE_TAG }}"
         imagePullSecrets:
           - name: "{{ .Values.SECRET_NAME }}"
-      - "./x10archery-backend.yaml.gotmpl"
+      - ./x10archery-backend.yaml.gotmpl
