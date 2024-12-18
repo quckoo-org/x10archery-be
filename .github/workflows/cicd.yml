@@ -58,3 +58,28 @@ jobs:
         run: |
           echo "Deploy failed! Production includes only tagged versions, development excludes tagged versions!" >> "$GITHUB_STEP_SUMMARY"
           exit 1
+
+  image_build_and_push:
+    runs-on: 'ubuntu-latest'
+    if: ${{ always() && !(contains(needs.*.result, 'failure')) && !cancelled() }}
+    outputs:
+      short_sha: ${{ steps.short_sha_step.outputs.sha }}
+      image_version: ${{ steps.set_image_version.outputs.image_version }}
+    needs:
+      - check_enviroment
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Log in to [Harbor]
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ vars.HARBOR_HOST }}
+          username: ${{ vars.HARBOR_ROBOT_NAME }}
+          password: ${{ secrets.HARBOR_ROBOT_TOKEN }}
+
+      - name: Get short sha
+        uses: benjlevesque/short-sha@v2.1
+        id: short_sha_step
+        with:
+          length: 7

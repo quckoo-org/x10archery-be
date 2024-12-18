@@ -1,0 +1,86 @@
+{{- $app := .Values.image -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "default.fullname" . }}
+  labels:
+    {{- include "default.labels" . | nindent 4 }}
+    {{- include "deploy.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.hpa.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "default.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "default.selectorLabels" . | nindent 8 }}
+        {{- include "pod.labels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ $app.repository }}:{{ $app.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ $app.pullPolicy }}
+          {{- if .Values.appSettings }}
+          args:
+          {{- range $key, $value := .Values.appSettings }}
+              - {{ $key }}={{ $value }}
+          {{- end }}
+          {{- end }}
+          ports:
+            - name: {{ .Values.service.name }}
+              containerPort: {{ .Values.service.port | int }}
+              protocol: TCP
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      affinity:
+        podAntiAffinity:
+        {{- if .Values.hardAntiAffinity }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  {{- include "default.selectorLabels" . | nindent 18 }}
+        {{- else }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  {{- include "default.selectorLabels" . | nindent 18 }}
+        {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

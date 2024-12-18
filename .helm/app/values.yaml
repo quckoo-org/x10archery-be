@@ -1,0 +1,73 @@
+replicaCount: 1
+
+image:
+  repository: registry.quckoo.net/x10-archery/x10archery-be
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets:
+  - name: "x10archerysecret"
+
+nameOverride: ""
+fullnameOverride: ""
+
+imagePull:
+  credentials: ""
+  secretName: "x10archerysecret"
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+# fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+# runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 30002
+  portName: grpc
+  protocol: TCP
+
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations:
+    kubernetes.io/ingress.class: nginx
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 10m
+    memory: 10Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+  
+appSettings: {}
+
+livenessProbe: {}
+readinessProbe: {}
+startupProbe: {}
