@@ -26,4 +26,4 @@ releases:
           tag: "{{ .Values.IMAGE_TAG }}"
         imagePullSecrets:
           - name: "{{ .Values.SECRET_NAME }}"
-      - ./x10archery-backend.yaml.gotmpl
+      - "./x10archery-backend.yaml.gotmpl"
