@@ -4,7 +4,6 @@ appSettings:
   "Serilog:WriteTo:0:Args:apiKey": {{ .Values.SEQ_TOKEN | quote }}
   "Serilog:WriteTo:0:Args:serverUrl": {{ .Values.SEQ_URI | quote }}
   "Google:ClientId": {{ .Values.GOOGLE_CLIENT_ID | quote }}
-
   {{ if eq .Environment.Name "production" }}
   "Postgres:Database": "x10-archery-production"
   {{else}}
