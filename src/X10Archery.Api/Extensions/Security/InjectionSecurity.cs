@@ -9,10 +9,12 @@ public static class InjectionSecurity
         {
             options.AddPolicy("ClientPermissionCombined", policy =>
             {
-                policy.AllowAnyHeader()
+                policy
                     .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials()
                     .SetIsOriginAllowed(_ => true)
-                    .AllowCredentials();
+                    .WithExposedHeaders("Content-Type", "Authorization", "Access-Control-Allow-Headers");
             });
         });
 
