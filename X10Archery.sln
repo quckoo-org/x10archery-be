@@ -8,7 +8,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "X10Archery.Dal", "src\X10Ar
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker files", "docker files", "{0EB80E99-4A95-4966-8E3F-AAE22549BFC8}"
 	ProjectSection(SolutionItems) = preProject
-		X10Archery.Api.DockerFile = X10Archery.Api.DockerFile
+		Dockerfile = Dockerfile
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{A69DAA64-8B4E-4D70-AE4D-813BF9039497}"
@@ -23,18 +23,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".helm", ".helm", "{853BDF82
 		.helm\helmfile.yaml = .helm\helmfile.yaml
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "app", "app", "{79C99A60-D246-48FD-86A0-B354F7BE35A2}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "x10archery-be", "x10archery-be", "{79C99A60-D246-48FD-86A0-B354F7BE35A2}"
 	ProjectSection(SolutionItems) = preProject
-		.helm\app\Chart.yaml = .helm\app\Chart.yaml
-		.helm\app\values.yaml = .helm\app\values.yaml
+		.helm\x10archery-be\Chart.yaml = .helm\x10archery-be\Chart.yaml
+		.helm\x10archery-be\values.yaml = .helm\x10archery-be\values.yaml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{9761434E-BD38-4464-BCC3-B835EF049F71}"
 	ProjectSection(SolutionItems) = preProject
-		.helm\app\templates\ingress.yaml = .helm\app\templates\ingress.yaml
-		.helm\app\templates\_helpers.tpl = .helm\app\templates\_helpers.tpl
-		.helm\app\templates\deployment.yaml = .helm\app\templates\deployment.yaml
-		.helm\app\templates\service.yaml = .helm\app\templates\service.yaml
+		.helm\x10archery-be\templates\service.yaml = .helm\x10archery-be\templates\service.yaml
+		.helm\x10archery-be\templates\_helpers.tpl = .helm\x10archery-be\templates\_helpers.tpl
+		.helm\x10archery-be\templates\deployment.yaml = .helm\x10archery-be\templates\deployment.yaml
 	EndProjectSection
 EndProject
 Global
