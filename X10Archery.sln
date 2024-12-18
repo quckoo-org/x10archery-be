@@ -34,7 +34,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{
 		.helm\x10archery-be\templates\service.yaml = .helm\x10archery-be\templates\service.yaml
 		.helm\x10archery-be\templates\_helpers.tpl = .helm\x10archery-be\templates\_helpers.tpl
 		.helm\x10archery-be\templates\deployment.yaml = .helm\x10archery-be\templates\deployment.yaml
-		.helm\x10archery-be\templates\ingress.yaml = .helm\x10archery-be\templates\ingress.yaml
+		.helm\x10archery-be\templates\ingress-http2.yaml = .helm\x10archery-be\templates\ingress-http2.yaml
 	EndProjectSection
 EndProject
 Global
