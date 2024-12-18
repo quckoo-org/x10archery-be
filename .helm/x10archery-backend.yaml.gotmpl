@@ -20,3 +20,35 @@ resources:
     cpu: 1
     memory: 500Mi
   {{end}}
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations: 
+    kubernetes.io/ingress.class: nginx
+    {{ if eq .Environment.Name "production" }}
+    cert-manager.io/cluster-issuer: "letsencrypt-x10archery-be-prod"
+    {{else}}
+    cert-manager.io/cluster-issuer: "letsencrypt-x10archery-be-dev"
+    {{end}}
+  hosts:
+    {{ if eq .Environment.Name "production" }}
+    - host: api.x10club.ru
+    {{else}}
+    - host: api.x10club.ru
+    {{end}}
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+    {{ if eq .Environment.Name "production" }}
+    - secretName: letsencrypt-x10archery-be-prod-tls
+    {{else}}
+    - secretName: letsencrypt-x10archery-be-dev-tls
+    {{end}}
+      hosts:
+        {{ if eq .Environment.Name "production" }}
+        - api.x10club.ru
+        {{else}}
+        - api.x10club.ru
+        {{end}}
