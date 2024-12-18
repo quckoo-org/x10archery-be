@@ -148,3 +148,71 @@ jobs:
           helm push ${{ vars.APPLICATION_NAME }}-${{ env.DEFAULT_VERSION_CHART }}-${{ needs.image_build_and_push.outputs.short_sha }}.tgz oci://${{ vars.HARBOR_HOST }}/${{ vars.HARBOR_PROJECT_NAME }}/${{ vars.APPLICATION_NAME }}-chart
           echo "Chart [${{ vars.APPLICATION_NAME }}] pushed as [oci://${{ vars.HARBOR_HOST }}/${{ vars.HARBOR_PROJECT_NAME }}/${{ vars.APPLICATION_NAME }}-chart] version [${{ env.DEFAULT_VERSION_CHART }}-${{ needs.image_build_and_push.outputs.short_sha }}]" >> "$GITHUB_STEP_SUMMARY"
           rm ${{ vars.APPLICATION_NAME }}-${{ env.DEFAULT_VERSION_CHART }}-${{ needs.image_build_and_push.outputs.short_sha }}.tgz
+
+  deploy:
+    runs-on: 'ubuntu-latest'
+    if: ${{ always() && !(contains(needs.*.result, 'failure')) && !cancelled() }}
+    needs:
+      - image_build_and_push
+      - helm_prepare_and_push
+    container:
+      image: ghcr.io/helmfile/helmfile:v1.0.0-rc.7
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get postgres password
+        run: |
+          echo ${{ secrets.KUBE_CONFIG }} | base64 -d > ~/CONFIG
+          export KUBECONFIG=~/CONFIG
+          POSTGRES_PASSWORD=$(kubectl get secret "postgresql-bitnami" -o jsonpath="{.data.postgres-password}" | base64 -d)
+          echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> $GITHUB_ENV
+
+      - name: Deploy
+        env:
+          CHART_VERSION: ${{ env.DEFAULT_VERSION_CHART }}-${{ needs.image_build_and_push.outputs.short_sha }}
+          IMAGE_TAG: ${{ needs.image_build_and_push.outputs.image_version }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          SECRET_NAME: ${{ vars.SECRET_NAME }}
+          HARBOR_ROBOT_NAME: ${{ vars.HARBOR_ROBOT_NAME }}
+          HARBOR_ROBOT_TOKEN: ${{ secrets.HARBOR_ROBOT_TOKEN }}
+        run: |
+          echo ${{ secrets.KUBE_CONFIG }} | base64 -d > ~/CONFIG
+          export KUBECONFIG=~/CONFIG
+          echo "${{ secrets.HARBOR_ROBOT_TOKEN }}" | helm registry login ${{ vars.HARBOR_HOST }} --username '${{ vars.HARBOR_ROBOT_NAME }}' --password-stdin
+          helmfile -f .helm/helmfile.yaml -e "${{ env.ENVIRONMENT }}" --state-values-set "HARBOR_HOST=${{ vars.HARBOR_HOST }},HARBOR_PROJECT_NAME=${{ vars.HARBOR_PROJECT_NAME }},APPLICATION_NAME=${{ vars.APPLICATION_NAME }},CHART_VERSION=${{ env.CHART_VERSION }},IMAGE_TAG=${{ env.IMAGE_TAG }},K8S_NAMESPACE=${{ vars.K8S_NAMESPACE }},SECRET_NAME=${{ vars.SECRET_NAME }},GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},SEQ_URI=${{ vars.SEQ_URI }},SEQ_TOKEN=${{ secrets.SEQ_TOKEN }},POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }}" sync
+
+          echo "Chart version: [${{ env.CHART_VERSION }}]" >> "$GITHUB_STEP_SUMMARY"
+          echo "Image version: [${{ env.IMAGE_TAG }}]" >> "$GITHUB_STEP_SUMMARY"
+
+  trivy-scan:
+    runs-on: 'ubuntu-latest'
+    if: ${{ always() && !(contains(needs.*.result, 'failure')) && !cancelled() }}
+    needs:
+      - image_build_and_push
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Trivy Cache
+        uses: yogeshlonkar/trivy-cache-action@v0
+        with:
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        id: scan
+        continue-on-error: true
+        env:
+          TRIVY_USERNAME: ${{ vars.HARBOR_ROBOT_NAME }}
+          TRIVY_PASSWORD: ${{ secrets.HARBOR_ROBOT_TOKEN }}
+        with:
+          image-ref: "${{ vars.HARBOR_HOST }}/${{ vars.HARBOR_PROJECT_NAME }}/${{ vars.APPLICATION_NAME }}:${{ needs.image_build_and_push.outputs.image_version }}"
+          output: "trivy-results"
+          cache-dir: .trivy
+
+      - name: Print result
+        if: ${{ steps.scan.conclusion == 'success' }}
+        run: |
+          cat trivy-results >> "$GITHUB_STEP_SUMMARY"
