@@ -4,10 +4,10 @@ helmDefaults:
   timeout: 300
 ---
 repositories:
-  - url: "{{ .Values.HARBOR_HOST }}/{{ .Values.HARBOR_PROJECT_NAME }}"
-    name: "{{ .Values.APPLICATION_NAME }}"
-    username: "robot\$x10-archery+x10-archery"
-    password: "{{ requiredEnv "HARBOR_ROBOT_TOKEN" }}"
+  - url: {{ .Values.HARBOR_HOST | toString }}/{{ .Values.HARBOR_PROJECT_NAME | toString }}
+    name: {{ .Values.APPLICATION_NAME | toString }}
+    username: 'robot$x10-archery+x10-archery'
+    password: {{ requiredEnv "HARBOR_ROBOT_TOKEN" }}
     oci: true
 ---
 environments:
