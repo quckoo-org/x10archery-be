@@ -83,3 +83,42 @@ jobs:
         id: short_sha_step
         with:
           length: 7
+
+      - name: Set [short_sha] in [GITHUB_OUTPUT]
+        run: |
+          echo "short_sha=${{ steps.short_sha_step.outputs.sha }}" >> $GITHUB_ENV
+          echo "sha=${{ steps.short_sha_step.outputs.sha }}" >> $GITHUB_OUTPUT
+          echo "short_sha set up to [${{ steps.short_sha_step.outputs.sha }}]" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build and push Docker image [Development version]
+        if: ${{ inputs.environment == 'development' && github.ref_type != 'tag' }}
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          build-args: |
+            "SHA_COMMIT=${{ env.short_sha }}"
+            "BRANCH_NAME=${{ github.ref_name }}"
+          push: true
+          tags: ${{ vars.HARBOR_HOST }}/${{ vars.HARBOR_PROJECT_NAME }}/${{ vars.APPLICATION_NAME }}:${{ env.short_sha }}-dev, ${{ vars.HARBOR_HOST }}/${{ vars.HARBOR_PROJECT_NAME }}/${{ vars.APPLICATION_NAME }}:latest-dev
+
+      - name: Build and push Docker image [Production version]
+        if: ${{ inputs.environment == 'production' && github.ref_type == 'tag' }}
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          build-args: |
+            "SHA_COMMIT=${{ env.short_sha }}"
+            "VERSION_TAG=${{ github.ref_name }}"
+          push: true
+          tags: ${{ vars.HARBOR_HOST }}/${{ vars.HARBOR_PROJECT_NAME }}/${{ vars.APPLICATION_NAME }}:${{ github.ref_name }}, ${{ vars.HARBOR_HOST }}/${{ vars.HARBOR_PROJECT_NAME }}/${{ vars.APPLICATION_NAME }}:latest
+
+      - name: Print image version
+        id: set_image_version
+        run: |
+          if [[ "${{ inputs.environment }}" == "production" && "${{ github.ref_type }}" == "tag" ]]; then
+            echo "image_version=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            echo "Image [${{ inputs.environment }}] version is [${{ github.ref_name }}]" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "image_version=${{ env.short_sha }}-dev" >> $GITHUB_OUTPUT
+            echo "Image [${{ inputs.environment }}] version is [${{ env.short_sha }}-dev]" >> "$GITHUB_STEP_SUMMARY"
+          fi
