@@ -9,12 +9,15 @@ public static class InjectionSecurity
         {
             options.AddPolicy("ClientPermissionCombined", policy =>
             {
+                // Разрешаем только необходимые методы
                 policy
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials()
-                    .SetIsOriginAllowed(_ => true)
-                    .WithExposedHeaders("Content-Type", "Authorization", "Access-Control-Allow-Headers");
+                    .WithMethods("GET", "POST", "OPTIONS", "PUT", "DELETE", "PATCH") 
+                    .WithHeaders("Content-Type", "Authorization", "X-Grpc-Web", "Grpc-TimeOut", "X-Accept-Content-Transfer-Encoding", "X-User-Agent", "X-Grpc-Web")
+                    .AllowCredentials() 
+                    .SetIsOriginAllowed(origin => 
+                            origin == "https://localhost:8080" || origin == "https://x10club.ru" 
+                    )
+                    .WithExposedHeaders("Content-Type", "Authorization", "Access-Control-Allow-Headers", "X-Grpc-Web", "Grpc-TimeOut"); 
             });
         });
 
