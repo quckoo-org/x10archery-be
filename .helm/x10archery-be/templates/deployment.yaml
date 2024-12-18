@@ -1,18 +1,16 @@
-{{- $app := .Values.image -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "default.fullname" . }}
+  name: {{ include "application.fullname" . }}
   labels:
-    {{- include "default.labels" . | nindent 4 }}
-    {{- include "deploy.labels" . | nindent 4 }}
+    {{- include "application.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.hpa.enabled }}
+  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "default.selectorLabels" . | nindent 6 }}
+      {{- include "application.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -20,30 +18,24 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "default.selectorLabels" . | nindent 8 }}
-        {{- include "pod.labels" . | nindent 8 }}
+        {{- include "application.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      serviceAccountName: {{ include "application.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ $app.repository }}:{{ $app.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ $app.pullPolicy }}
-          {{- if .Values.appSettings }}
-          args:
-          {{- range $key, $value := .Values.appSettings }}
-              - {{ $key }}={{ $value }}
-          {{- end }}
-          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - name: {{ .Values.service.name }}
-              containerPort: {{ .Values.service.port | int }}
+            - name: http
+              containerPort: {{ .Values.service.port }}
               protocol: TCP
           {{- with .Values.livenessProbe }}
           livenessProbe:
@@ -63,23 +55,10 @@ spec:
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- with .Values.affinity }}
       affinity:
-        podAntiAffinity:
-        {{- if .Values.hardAntiAffinity }}
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - topologyKey: "kubernetes.io/hostname"
-              labelSelector:
-                matchLabels:
-                  {{- include "default.selectorLabels" . | nindent 18 }}
-        {{- else }}
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 1
-            podAffinityTerm:
-              topologyKey: kubernetes.io/hostname
-              labelSelector:
-                matchLabels:
-                  {{- include "default.selectorLabels" . | nindent 18 }}
-        {{- end }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}

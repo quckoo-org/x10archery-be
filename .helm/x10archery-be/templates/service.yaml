@@ -1,16 +1,15 @@
-{{- $values := index .Values "service" -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "default.fullname" . }}
+  name: {{ include "application.fullname" . }}
   labels:
-    {{- include "default.labels" . | nindent 4 }}
+    {{- include "application.labels" . | nindent 4 }}
 spec:
-  type: {{ $values.type }}
+  type: {{ .Values.service.type }}
   ports:
-    - port: {{ $values.port | int }}
-      targetPort: {{ $values.name }}
-      protocol: {{ $values.protocol }}
-      name: {{ $values.name }}
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.portName }}
+      protocol: {{ .Values.service.protocol }}
+      name: {{ .Values.service.portName }}
   selector:
-    {{- include "default.selectorLabels" . | nindent 4 }}
+    {{- include "application.selectorLabels" . | nindent 4 }}
