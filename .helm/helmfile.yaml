@@ -13,7 +13,7 @@ repositories:
 environments:
   development:
   production:
-
+---
 releases:
   - name: {{ .Values.APPLICATION_NAME | toString }}
     namespace: {{ .Values.K8S_NAMESPACE | toString }}
@@ -24,6 +24,6 @@ releases:
         - image:
           repository: {{ .Values.HARBOR_HOST | toString }}/{{ .Values.HARBOR_PROJECT_NAME | toString }}/{{ .Values.APPLICATION_NAME | toString }}
           tag: {{ .Values.IMAGE_TAG | toString }}
-          - imagePullSecrets:
-              - name: {{ .Values.SECRET_NAME | toString }}
+          imagePullSecrets:
+            - name: {{ .Values.SECRET_NAME | toString }}
           - ./x10archery-backend.yaml.gotmpl
